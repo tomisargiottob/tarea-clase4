@@ -36,8 +36,9 @@ productosRouter.get('/:id', (req, res) => {
   }
 });
 
-productosRouter.post('', upload.single('thumbnail'), (req, res) => {
+productosRouter.post('', upload.single('avatar'), (req, res) => {
   const product = req.body;
+  product.thumbnail = req.file.originalname;
   product.id = Math.max(...productos.map((producto) => producto.id)) + 1;
   if (product.id < 0) {
     product.id = 0;
@@ -47,18 +48,18 @@ productosRouter.post('', upload.single('thumbnail'), (req, res) => {
 });
 
 productosRouter.put('/:id', upload.single('thumbnail'), (req, res) => {
-  const { id } = req.query;
-  const productPosition = productos.findIndex((producto) => producto.id === id);
+  const { id } = req.params;
+  const productPosition = productos.findIndex((producto) => producto.id === Number(id));
   if (productPosition !== -1) {
     const product = productos[productPosition];
-    if (req.body.title) {
-      product.title = req.body.title;
+    if (req.body?.title) {
+      product.name = req.body.name;
     }
-    if (req.body.price) {
+    if (req.body?.price) {
       product.price = req.body.price;
     }
-    if (req.body.thumbnail) {
-      product.thumbnail = req.body.thumbnail;
+    if (req.file?.originalname) {
+      product.thumbnail = req.file.originalname;
     }
     productos[productPosition] = product;
     res.status(200).send({ product });
@@ -68,10 +69,12 @@ productosRouter.put('/:id', upload.single('thumbnail'), (req, res) => {
 });
 
 productosRouter.delete('/:id', (req, res) => {
-  const { id } = req.query;
-  const productPosition = productos.findIndex((producto) => producto.id === id);
+  const { id } = req.params;
+  const productPosition = productos.findIndex((producto) => producto.id === Number(id));
   if (productPosition !== -1) {
+    const product = productos[productPosition];
     productos.splice(productPosition, 1);
+    res.status(200).send({ product });
   } else {
     res.status(404).send(`There is no product with the id ${id}`);
   }
